@@ -1,6 +1,8 @@
 <template>
+  <!-- Render employee node only if it should be visible (based on level visibility) -->
   <div v-if="isVisible" class="employee-node">
-    <!-- Employee Card -->
+
+    <!-- Main Employee Card -->
     <div 
       ref="employeeCardRef"
       class="employee-card transition-all duration-300 ease-in-out cursor-pointer"
@@ -11,7 +13,8 @@
       :style="{ backgroundColor: levelColors[employee.level] + '10' }"
       @click="toggleExpanded"
     >
-      <!-- Avatar -->
+
+      <!-- Avatar with initials (or later, a photo) -->
       <div 
         class="avatar"
         :style="{ backgroundColor: levelColors[employee.level] }"
@@ -19,24 +22,22 @@
         {{ getInitials(employee.name) }}
       </div>
 
-      <!-- Basic Info (Always Visible) -->
+      <!-- Basic employee info (always shown) -->
       <div class="basic-info">
         <h3 class="employee-name">{{ employee.name }}</h3>
         <p class="employee-title">{{ employee.jobTitle }}</p>
-        
-        <!-- Department Badge -->
+
+        <!-- Department and Location badges -->
         <div class="badge department-badge">{{ employee.department }}</div>
-        
-        <!-- Location Badge -->
         <div class="badge location-badge">
-          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="location-icon" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
           </svg>
           {{ employee.location }}
         </div>
       </div>
 
-      <!-- Expand/Collapse Indicator -->
+      <!-- Show expand/collapse UI -->
       <div class="expand-indicator">
         <span class="text-xs text-gray-500">
           {{ expanded ? 'Click to collapse' : 'Click to expand' }}
@@ -46,58 +47,33 @@
         </div>
       </div>
 
-      <!-- Expanded Details (Conditional) -->
+      <!-- Expanded metrics and team controls -->
       <div 
         v-if="expanded" 
         class="expanded-details transition-all duration-300 ease-in-out"
       >
-        <!-- Layer Badge -->
+
+        <!-- Show what layer in hierarchy the employee is -->
         <div class="badge layer-badge">Layer: {{ employee.level }}</div>
-        
-        <!-- Metrics -->
+
+        <!-- Metrics section with calculated info -->
         <div class="metrics">
-          <div class="metric">
-            <span class="metric-label">Descendants:</span>
-            <span class="metric-value">{{ employee.descendantCount }}</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Non-leaf descendants:</span>
-            <span class="metric-value">{{ employee.nonLeafDescendants }}</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Manager count:</span>
-            <span class="metric-value">{{ employee.metrics.managerCount }}</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Manager cost:</span>
-            <span class="metric-value">${{ formatCurrency(employee.metrics.managerCost) }} / year</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">IC count:</span>
-            <span class="metric-value">{{ employee.metrics.icCount }}</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">IC cost:</span>
-            <span class="metric-value">${{ formatCurrency(employee.metrics.icCost) }} / year</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Total cost:</span>
-            <span class="metric-value">${{ formatCurrency(employee.metrics.totalCost) }} / year</span>
-          </div>
-          
-          <div class="metric">
-            <span class="metric-label">Management cost ratio:</span>
-            <span class="metric-value">{{ employee.metrics.managementCostRatio }}</span>
+          <div class="metric" v-for="metric in [
+            ['Descendants', employee.descendantCount],
+            ['Non-leaf descendants', employee.nonLeafDescendants],
+            ['Manager count', employee.metrics.managerCount],
+            ['Manager cost', '$' + formatCurrency(employee.metrics.managerCost) + ' / year'],
+            ['IC count', employee.metrics.icCount],
+            ['IC cost', '$' + formatCurrency(employee.metrics.icCost) + ' / year'],
+            ['Total cost', '$' + formatCurrency(employee.metrics.totalCost) + ' / year'],
+            ['Management cost ratio', employee.metrics.managementCostRatio]
+          ]" :key="metric[0]">
+            <span class="metric-label">{{ metric[0] }}:</span>
+            <span class="metric-value">{{ metric[1] }}</span>
           </div>
         </div>
 
-        <!-- Hierarchy Toggle (only when expanded) -->
+        <!-- Button to expand/collapse children -->
         <div v-if="employee.hasChildren" class="hierarchy-controls">
           <button 
             @click.stop="toggleHierarchy"
@@ -106,7 +82,8 @@
             {{ employee.isExpanded ? 'Collapse Team' : 'Expand Team' }}
             ({{ employee.directReports }} direct reports)
           </button>
-          <!-- Debug info -->
+
+          <!-- Debug info for deep layers -->
           <div v-if="employee.level >= 8" class="text-xs text-gray-500 mt-1">
             Level {{ employee.level }} | Children: {{ employee.children.length }} | 
             Child levels: {{ employee.children.map(c => c.level).join(', ') }}
@@ -115,7 +92,7 @@
       </div>
     </div>
 
-    <!-- Children (Recursive) - Positioned below the card -->
+    <!-- Recursively render children if expanded -->
     <div 
       v-if="employee.isExpanded && employee.children && employee.children.length > 0" 
       class="children-section"
@@ -139,34 +116,22 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 
-// Define props
+// Receive props from parent component
 const props = defineProps({
-  employee: {
-    type: Object,
-    required: true
-  },
-  levelColors: {
-    type: Object,
-    required: true
-  },
-  visibleLayers: {
-    type: Set,
-    required: true
-  },
-  highlightedEmployeeId: {
-    type: String,
-    default: null
-  }
+  employee: Object,
+  levelColors: Object,
+  visibleLayers: Set,
+  highlightedEmployeeId: String
 })
 
-// Define emits
+// Define emitted events
 const emit = defineEmits(['toggle-hierarchy', 'employee-highlighted'])
 
-// Local state for card expansion
+// Track whether card is expanded
 const expanded = ref(false)
 const employeeCardRef = ref(null)
 
-// Watch for when this employee becomes highlighted
+// Watch for highlighting changes to scroll into view
 watch(() => props.highlightedEmployeeId, (newId) => {
   if (newId === props.employee.id && employeeCardRef.value) {
     nextTick(() => {
@@ -189,35 +154,33 @@ watch(() => props.highlightedEmployeeId, (newId) => {
   }
 })
 
-// Computed properties
+// Determine if this node should be visible based on its layer
 const isVisible = computed(() => {
   return props.visibleLayers.has(props.employee.level)
 })
 
-// Methods
+// Toggle card expanded state
 const toggleExpanded = () => {
   expanded.value = !expanded.value
 }
 
+// Emit toggle event to parent
 const toggleHierarchy = () => {
   emit('toggle-hierarchy', props.employee)
 }
 
+// Format initials for avatar
 const getInitials = (name) => {
   if (!name) return '??'
-  const nameParts = name.trim().split(' ')
-  if (nameParts.length === 1) {
-    return nameParts[0].substring(0, 2).toUpperCase()
-  }
-  return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase()
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
+// Format large currency values for readability
 const formatCurrency = (amount) => {
-  if (amount >= 1000000) {
-    return (amount / 1000000).toFixed(1) + 'M'
-  } else if (amount >= 1000) {
-    return (amount / 1000).toFixed(0) + 'K'
-  }
+  if (amount >= 1_000_000) return (amount / 1_000_000).toFixed(1) + 'M'
+  if (amount >= 1_000) return (amount / 1_000).toFixed(0) + 'K'
   return amount.toLocaleString()
 }
 </script>
@@ -315,6 +278,13 @@ const formatCurrency = (amount) => {
 .location-badge {
   background-color: #dbeafe;
   color: #2563eb;
+}
+
+.location-icon {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .layer-badge {
