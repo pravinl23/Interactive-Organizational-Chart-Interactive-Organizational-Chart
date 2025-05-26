@@ -9,43 +9,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
         </button>
-        
-        <div v-if="searchExpanded" class="toolbar-panel search-panel">
-          <div class="panel-header">
-            <h3>Search Employees</h3>
-            <button @click="searchExpanded = false" class="close-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="search-container">
-            <input
-              v-model="searchQuery"
-              @input="handleSearch"
-              @keyup.enter="searchAndHighlight"
-              type="text"
-              placeholder="Search by name..."
-              class="search-input"
-            />
-          </div>
-          
-          <div v-if="searchResults.length > 0 && searchQuery" class="search-results">
-            <div class="search-results-header">{{ searchResults.length }} result(s)</div>
-            <div class="search-results-list">
-              <button
-                v-for="result in searchResults.slice(0, 5)"
-                :key="result.id"
-                @click="selectEmployee(result)"
-                class="search-result-item"
-              >
-                <div class="search-result-name">{{ result.name }}</div>
-                <div class="search-result-details">{{ result.jobTitle }}</div>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Filters -->
@@ -55,36 +18,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
           </svg>
         </button>
-        
-        <div v-if="filtersExpanded" class="toolbar-panel filters-panel">
-          <div class="panel-header">
-            <h3>Layer Filters</h3>
-            <button @click="filtersExpanded = false" class="close-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="layer-buttons">
-            <button
-              v-for="level in availableLevels"
-              :key="level"
-              @click="toggleLayerVisibility(level)"
-              :class="[
-                'layer-btn',
-                visibleLayers.has(level) ? 'layer-btn-active' : 'layer-btn-inactive'
-              ]"
-              :style="visibleLayers.has(level) ? { backgroundColor: levelColors[level], borderColor: levelColors[level] } : {}"
-            >
-              {{ level }}
-            </button>
-          </div>
-          
-          <div class="layer-info">
-            {{ visibleLayers.size }}/{{ availableLevels.length }} layers visible
-          </div>
-        </div>
       </div>
 
       <!-- Controls -->
@@ -94,43 +27,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
           </svg>
         </button>
-        
-        <div v-if="controlsExpanded" class="toolbar-panel controls-panel">
-          <div class="panel-header">
-            <h3>Chart Controls</h3>
-            <button @click="controlsExpanded = false" class="close-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="control-buttons">
-            <button 
-              @click="expandAll" 
-              class="control-btn control-btn-primary" 
-              :disabled="isExpandAllDisabled"
-              :title="isExpandAllDisabled ? 'Reduce visible layers to 5 or fewer to use Expand All' : 'Expand all nodes in the chart'"
-            >
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
-              {{ isExpandAllDisabled ? 'Expand All (Disabled)' : 'Expand All' }}
-            </button>
-            <button @click="collapseAll" class="control-btn control-btn-secondary">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-              </svg>
-              Collapse All
-            </button>
-            <button @click="resetView" class="control-btn control-btn-outline">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-              </svg>
-              Reset View
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Zoom -->
@@ -140,42 +36,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
           </svg>
         </button>
-        
-        <div v-if="zoomExpanded" class="toolbar-panel zoom-panel">
-          <div class="panel-header">
-            <h3>Zoom Controls</h3>
-            <button @click="zoomExpanded = false" class="close-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="zoom-controls">
-            <button 
-              @click="zoomOut"
-              class="zoom-btn"
-              :disabled="zoomLevel <= 0.25"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-              </svg>
-            </button>
-            <div class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</div>
-            <button 
-              @click="zoomIn"
-              class="zoom-btn"
-              :disabled="zoomLevel >= 2"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
-            </button>
-          </div>
-          <button @click="resetZoom" class="zoom-reset-btn">
-            Reset to 100%
-          </button>
-        </div>
       </div>
 
       <!-- Statistics -->
@@ -185,30 +45,214 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
         </button>
+      </div>
+
+      <!-- Chart Views -->
+      <div class="toolbar-item" :class="{ 'active': chartsExpanded }">
+        <button @click="toggleSection('charts')" class="toolbar-btn" title="Chart Views">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Centralized Panel Backdrop -->
+    <div 
+      v-if="anyPanelExpanded" 
+      class="panel-backdrop"
+      @click="closeAllPanels"
+    ></div>
+
+    <!-- Centralized Panel Container -->
+    <div v-if="anyPanelExpanded" class="toolbar-panel">
+      <div class="panel-header">
+        <h3>{{ currentPanelTitle }}</h3>
+        <button @click="closeAllPanels" class="close-btn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Search Panel Content -->
+      <div v-if="searchExpanded" class="panel-content">
+        <div class="search-container">
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            @keyup.enter="searchAndHighlight"
+            type="text"
+            placeholder="Search by name..."
+            class="search-input"
+          />
+        </div>
         
-        <div v-if="statsExpanded" class="toolbar-panel stats-panel">
-          <div class="panel-header">
-            <h3>Statistics</h3>
-            <button @click="statsExpanded = false" class="close-btn">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
+        <div v-if="searchResults.length > 0 && searchQuery" class="search-results">
+          <div class="search-results-header">{{ searchResults.length }} result(s)</div>
+          <div class="search-results-list">
+            <button
+              v-for="result in searchResults.slice(0, 5)"
+              :key="result.id"
+              @click="selectEmployee(result)"
+              class="search-result-item"
+            >
+              <div class="search-result-name">{{ result.name }}</div>
+              <div class="search-result-details">{{ result.jobTitle }}</div>
             </button>
           </div>
-          
-          <div class="stats">
-            <div class="stat-item">
-              <span class="stat-label">Total Employees</span>
-              <span class="stat-value">{{ realEmployeeCount.toLocaleString() }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Visible Layers</span>
-              <span class="stat-value">{{ visibleLayers.size }}/{{ availableLevels.length }}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Current Zoom</span>
-              <span class="stat-value">{{ Math.round(zoomLevel * 100) }}%</span>
-            </div>
+        </div>
+      </div>
+
+      <!-- Filters Panel Content -->
+      <div v-if="filtersExpanded" class="panel-content">
+        <div class="layer-buttons">
+          <button
+            v-for="level in availableLevels"
+            :key="level"
+            @click="toggleLayerVisibility(level)"
+            :class="[
+              'layer-btn',
+              visibleLayers.has(level) ? 'layer-btn-active' : 'layer-btn-inactive'
+            ]"
+            :style="visibleLayers.has(level) ? { backgroundColor: levelColors[level], borderColor: levelColors[level] } : {}"
+          >
+            {{ level }}
+          </button>
+        </div>
+        
+        <div class="layer-info">
+          {{ visibleLayers.size }}/{{ availableLevels.length }} layers visible
+        </div>
+      </div>
+
+      <!-- Controls Panel Content -->
+      <div v-if="controlsExpanded" class="panel-content">
+        <div class="control-buttons">
+          <button 
+            @click="expandAll" 
+            class="control-btn control-btn-primary" 
+            :disabled="isExpandAllDisabled"
+            :title="isExpandAllDisabled ? 'Reduce visible layers to 5 or fewer to use Expand All' : 'Expand all nodes in the chart'"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            {{ isExpandAllDisabled ? 'Expand All (Disabled)' : 'Expand All' }}
+          </button>
+          <button @click="collapseAll" class="control-btn control-btn-secondary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+            </svg>
+            Collapse All
+          </button>
+          <button @click="resetView" class="control-btn control-btn-outline">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Reset View
+          </button>
+        </div>
+      </div>
+
+      <!-- Zoom Panel Content -->
+      <div v-if="zoomExpanded" class="panel-content">
+        <div class="zoom-controls">
+          <button 
+            @click="zoomOut"
+            class="zoom-btn"
+            :disabled="zoomLevel <= 0.25"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+            </svg>
+          </button>
+          <div class="zoom-level">{{ Math.round(zoomLevel * 100) }}%</div>
+          <button 
+            @click="zoomIn"
+            class="zoom-btn"
+            :disabled="zoomLevel >= 2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+          </button>
+        </div>
+        <button @click="resetZoom" class="zoom-reset-btn">
+          Reset to 100%
+        </button>
+      </div>
+
+      <!-- Statistics Panel Content -->
+      <div v-if="statsExpanded" class="panel-content">
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Employees</span>
+            <span class="stat-value">{{ realEmployeeCount.toLocaleString() }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Visible Layers</span>
+            <span class="stat-value">{{ visibleLayers.size }}/{{ availableLevels.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current Zoom</span>
+            <span class="stat-value">{{ Math.round(zoomLevel * 100) }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Panel Content -->
+      <div v-if="chartsExpanded" class="panel-content">
+        <div class="chart-categories">
+          <!-- Hierarchy Chart -->
+          <div class="chart-category">
+            <h4 class="category-title">Hierarchy Chart</h4>
+            <button @click="switchToChart('orgchart')" class="chart-btn" :class="{ 'active': currentView === 'orgchart' }">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Org Chart
+            </button>
+          </div>
+
+          <!-- Organizational Overview -->
+          <div class="chart-category">
+            <h4 class="category-title">Organizational Overview</h4>
+            <button @click="switchToChart('proportion')" class="chart-btn" :class="{ 'active': currentView === 'proportion' }">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+              </svg>
+              Proportion Chart
+            </button>
+          </div>
+
+          <!-- Hierarchy & Layers -->
+          <div class="chart-category">
+            <h4 class="category-title">Hierarchy & Layers</h4>
+            <button @click="switchToChart('heatmap')" class="chart-btn" :class="{ 'active': currentView === 'heatmap' }">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+              </svg>
+              Headcount Heatmap
+            </button>
+            <button @click="switchToChart('pyramid')" class="chart-btn" :class="{ 'active': currentView === 'pyramid' }">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+              Pyramid Chart
+            </button>
+          </div>
+
+          <!-- Cost Analysis -->
+          <div class="chart-category">
+            <h4 class="category-title">Cost Analysis</h4>
+            <button @click="switchToChart('cost-distribution')" class="chart-btn" :class="{ 'active': currentView === 'cost-distribution' }">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+              </svg>
+              Cost Distribution
+            </button>
           </div>
         </div>
       </div>
@@ -221,14 +265,15 @@
          @wheel="handleWheel">
       <div 
         class="chart-content-horizontal"
+        :class="{ 'analytics-mode': currentView !== 'orgchart' }"
         :style="{ 
-          transform: `scale(${zoomLevel})`,
+          transform: currentView === 'orgchart' ? `scale(${zoomLevel})` : 'none',
           transformOrigin: 'top left'
         }"
       >
-        <!-- Render the tree recursively starting from root -->
+        <!-- Org Chart View -->
         <EmployeeNode 
-          v-if="hierarchyTree && !loading"
+          v-if="hierarchyTree && !loading && currentView === 'orgchart'"
           :employee="hierarchyTree"
           :level-colors="levelColors"
           :visible-layers="visibleLayers"
@@ -236,6 +281,134 @@
           @toggle-hierarchy="handleHierarchyToggle"
           @employee-highlighted="handleEmployeeHighlighted"
         />
+
+        <!-- Analytics Chart Views -->
+        <div v-if="currentView !== 'orgchart'" class="analytics-container">
+          <!-- Proportion Chart View -->
+          <div v-if="currentView === 'proportion'" class="chart-view">
+            <h2 class="chart-title">Headcount Proportion by Department</h2>
+            <p class="chart-description">Distribution of employees across different areas</p>
+            <div class="proportion-chart">
+              <div class="pie-chart">
+                <svg viewBox="0 0 200 200" class="pie-svg">
+                  <circle
+                    v-for="(segment, index) in pieSegments"
+                    :key="index"
+                    cx="100"
+                    cy="100"
+                    r="80"
+                    fill="none"
+                    :stroke="segment.color"
+                    stroke-width="40"
+                    :stroke-dasharray="segment.dashArray"
+                    :stroke-dashoffset="segment.dashOffset"
+                    :transform="segment.transform"
+                  />
+                </svg>
+              </div>
+              <div class="pie-legend">
+                <div v-for="dept in departmentData" :key="dept.name" class="legend-item">
+                  <div class="legend-color" :style="{ backgroundColor: dept.color }"></div>
+                  <span class="legend-label">{{ dept.name }} ({{ dept.count }})</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Summary statistics -->
+            <div class="summary-stats">
+              <h3 class="summary-title">Summary Statistics</h3>
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-number">{{ departmentData.length }}</div>
+                  <div class="stat-label">Total Departments</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number">{{ realEmployeeCount.toLocaleString() }}</div>
+                  <div class="stat-label">Total Employees</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number">{{ Math.round(realEmployeeCount / departmentData.length) }}</div>
+                  <div class="stat-label">Avg per Department</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pyramid Chart View -->
+          <div v-if="currentView === 'pyramid'" class="chart-view">
+            <h2 class="chart-title">Organizational Pyramid</h2>
+            <p class="chart-description">Headcount distribution by organizational level</p>
+            <div class="pyramid-chart">
+              <div 
+                v-for="level in pyramidData" 
+                :key="level.level"
+                class="pyramid-level"
+                :style="{ 
+                  width: (level.count / maxLevelCount * 100) + '%',
+                  backgroundColor: levelColors[level.level] + '80'
+                }"
+              >
+                <div class="pyramid-label">Level {{ level.level }}</div>
+                <div class="pyramid-count">{{ level.count }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost Distribution View -->
+          <div v-if="currentView === 'cost-distribution'" class="chart-view">
+            <h2 class="chart-title">Cost Distribution by Department</h2>
+            <p class="chart-description">Total workforce cost across departments</p>
+            <div class="cost-chart">
+              <div 
+                v-for="dept in costData" 
+                :key="dept.name"
+                class="cost-bar"
+              >
+                <div class="cost-label">{{ dept.name }}</div>
+                <div class="cost-bar-container">
+                  <div 
+                    class="cost-bar-fill"
+                    :style="{ 
+                      width: (dept.cost / maxCost * 100) + '%',
+                      backgroundColor: dept.color
+                    }"
+                  ></div>
+                  <span class="cost-amount">${{ formatCurrency(dept.cost) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Heatmap View -->
+          <div v-if="currentView === 'heatmap'" class="chart-view">
+            <h2 class="chart-title">Headcount Heatmap</h2>
+            <p class="chart-description">Employee distribution across levels and departments</p>
+            <div class="heatmap-container">
+              <div class="heatmap-grid">
+                <div class="heatmap-header">
+                  <div class="heatmap-cell header-cell"></div>
+                  <div v-for="dept in uniqueDepartments" :key="dept" class="heatmap-cell header-cell">
+                    {{ dept }}
+                  </div>
+                </div>
+                <div v-for="level in availableLevels" :key="level" class="heatmap-row">
+                  <div class="heatmap-cell level-cell">Level {{ level }}</div>
+                  <div 
+                    v-for="dept in uniqueDepartments" 
+                    :key="dept"
+                    class="heatmap-cell data-cell"
+                    :style="{ 
+                      backgroundColor: getHeatmapColor(getHeatmapValue(level, dept)),
+                      color: getHeatmapValue(level, dept) > 50 ? 'white' : 'black'
+                    }"
+                  >
+                    {{ getHeatmapValue(level, dept) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -273,11 +446,13 @@ const searchResults = ref([])
 const highlightedEmployeeId = ref(null)
 
 // Sidebar section states
-const searchExpanded = ref(true)
+const searchExpanded = ref(false)
 const filtersExpanded = ref(false)
 const controlsExpanded = ref(false)
 const zoomExpanded = ref(false)
 const statsExpanded = ref(false)
+const chartsExpanded = ref(false)
+const currentView = ref('orgchart')
 
 // Level colors
 const levelColors = {
@@ -297,6 +472,135 @@ const levelColors = {
 // Computed properties
 const isExpandAllDisabled = computed(() => visibleLayers.value.size > 5)
 const realEmployeeCount = computed(() => allEmployees.value.filter(emp => !emp.isVirtualRoot).length)
+
+// Centralized panel computed properties
+const anyPanelExpanded = computed(() => {
+  return searchExpanded.value || filtersExpanded.value || controlsExpanded.value || 
+         zoomExpanded.value || statsExpanded.value || chartsExpanded.value
+})
+
+const currentPanelTitle = computed(() => {
+  if (searchExpanded.value) return 'Search Employees'
+  if (filtersExpanded.value) return 'Layer Filters'
+  if (controlsExpanded.value) return 'Chart Controls'
+  if (zoomExpanded.value) return 'Zoom Controls'
+  if (statsExpanded.value) return 'Statistics'
+  if (chartsExpanded.value) return 'Analytics Views'
+  return ''
+})
+
+// Analytics data computed properties
+const departmentData = computed(() => {
+  const deptCounts = {}
+  const realEmps = allEmployees.value.filter(emp => !emp.isVirtualRoot)
+  
+  realEmps.forEach(emp => {
+    deptCounts[emp.department] = (deptCounts[emp.department] || 0) + 1
+  })
+  
+  const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16']
+  
+  return Object.entries(deptCounts)
+    .map(([name, count], index) => ({
+      name,
+      count,
+      percentage: (count / realEmps.length * 100).toFixed(1),
+      color: colors[index % colors.length]
+    }))
+    .sort((a, b) => b.count - a.count)
+})
+
+const spanData = computed(() => {
+  const spans = {}
+  const managers = allEmployees.value.filter(emp => emp.hasChildren && !emp.isVirtualRoot)
+  
+  managers.forEach(emp => {
+    const span = emp.directReports
+    let range
+    if (span === 1) range = '1:1'
+    else if (span <= 3) range = '1:2-3'
+    else if (span <= 5) range = '1:4-5'
+    else if (span <= 7) range = '1:6-7'
+    else if (span <= 10) range = '1:8-10'
+    else range = '1:10+'
+    
+    if (!spans[range]) {
+      spans[range] = { count: 0, level: emp.level }
+    }
+    spans[range].count++
+  })
+  
+  return Object.entries(spans).map(([range, data]) => ({
+    range,
+    count: data.count,
+    level: data.level
+  }))
+})
+
+const maxSpanCount = computed(() => Math.max(...spanData.value.map(s => s.count), 1))
+
+const pyramidData = computed(() => {
+  const levels = {}
+  const realEmps = allEmployees.value.filter(emp => !emp.isVirtualRoot)
+  
+  realEmps.forEach(emp => {
+    levels[emp.level] = (levels[emp.level] || 0) + 1
+  })
+  
+  return Object.entries(levels)
+    .map(([level, count]) => ({ level: parseInt(level), count }))
+    .sort((a, b) => a.level - b.level)
+})
+
+const maxLevelCount = computed(() => Math.max(...pyramidData.value.map(l => l.count), 1))
+
+const costData = computed(() => {
+  const deptCosts = {}
+  const realEmps = allEmployees.value.filter(emp => !emp.isVirtualRoot)
+  
+  realEmps.forEach(emp => {
+    const salary = emp.salary || 0
+    deptCosts[emp.department] = (deptCosts[emp.department] || 0) + salary
+  })
+  
+  const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16']
+  
+  return Object.entries(deptCosts)
+    .map(([name, cost], index) => ({
+      name,
+      cost,
+      color: colors[index % colors.length]
+    }))
+    .sort((a, b) => b.cost - a.cost)
+})
+
+const maxCost = computed(() => Math.max(...costData.value.map(d => d.cost), 1))
+
+const uniqueDepartments = computed(() => {
+  return [...new Set(allEmployees.value.filter(emp => !emp.isVirtualRoot).map(emp => emp.department))]
+    .sort()
+    .slice(0, 10) // Limit for display
+})
+
+const pieSegments = computed(() => {
+  let cumulativePercentage = 0
+  const circumference = 2 * Math.PI * 80 // radius = 80
+  
+  return departmentData.value.map(dept => {
+    const percentage = parseFloat(dept.percentage)
+    const dashArray = `${(percentage / 100) * circumference} ${circumference}`
+    const dashOffset = -cumulativePercentage / 100 * circumference
+    
+    cumulativePercentage += percentage
+    
+    return {
+      color: dept.color,
+      dashArray,
+      dashOffset,
+      transform: 'rotate(-90 100 100)'
+    }
+  })
+})
 
 // Watch for employee changes
 import { watch } from 'vue'
@@ -744,23 +1048,103 @@ const handleEmployeeHighlighted = (eventData) => {
 }
 
 const toggleSection = (section) => {
+  // Check if the clicked section is already open
+  let isCurrentlyOpen = false
   switch (section) {
     case 'search':
-      searchExpanded.value = !searchExpanded.value
+      isCurrentlyOpen = searchExpanded.value
       break
     case 'filters':
-      filtersExpanded.value = !filtersExpanded.value
+      isCurrentlyOpen = filtersExpanded.value
       break
     case 'controls':
-      controlsExpanded.value = !controlsExpanded.value
+      isCurrentlyOpen = controlsExpanded.value
       break
     case 'zoom':
-      zoomExpanded.value = !zoomExpanded.value
+      isCurrentlyOpen = zoomExpanded.value
       break
     case 'stats':
-      statsExpanded.value = !statsExpanded.value
+      isCurrentlyOpen = statsExpanded.value
+      break
+    case 'charts':
+      isCurrentlyOpen = chartsExpanded.value
       break
   }
+  
+  // Close all sections first
+  searchExpanded.value = false
+  filtersExpanded.value = false
+  controlsExpanded.value = false
+  zoomExpanded.value = false
+  statsExpanded.value = false
+  chartsExpanded.value = false
+  
+  // If the section wasn't open, open it now
+  if (!isCurrentlyOpen) {
+    switch (section) {
+      case 'search':
+        searchExpanded.value = true
+        break
+      case 'filters':
+        filtersExpanded.value = true
+        break
+      case 'controls':
+        controlsExpanded.value = true
+        break
+      case 'zoom':
+        zoomExpanded.value = true
+        break
+      case 'stats':
+        statsExpanded.value = true
+        break
+      case 'charts':
+        chartsExpanded.value = true
+        break
+    }
+  }
+}
+
+const closeAllPanels = () => {
+  searchExpanded.value = false
+  filtersExpanded.value = false
+  controlsExpanded.value = false
+  zoomExpanded.value = false
+  statsExpanded.value = false
+  chartsExpanded.value = false
+}
+
+const switchToChart = (view) => {
+  currentView.value = view
+}
+
+const getHeatmapValue = (level, department) => {
+  const employees = allEmployees.value.filter(emp => 
+    !emp.isVirtualRoot && emp.level === level && emp.department === department
+  )
+  return employees.length
+}
+
+const getHeatmapColor = (value) => {
+  if (value === 0) return '#f8fafc'
+  const intensity = Math.min(value / 100, 1) // Normalize to 0-1
+  const opacity = 0.1 + (intensity * 0.9) // 10% to 100% opacity
+  return `rgba(59, 130, 246, ${opacity})`
+}
+
+const getChartTitle = (view) => {
+  const titles = {
+    'avg-span': 'Average Span of Control',
+    'cost-breakdown': 'Cost Breakdown Analysis'
+  }
+  return titles[view] || 'Analytics View'
+}
+
+const getChartDescription = (view) => {
+  const descriptions = {
+    'avg-span': 'Summary view of average span across departments',
+    'cost-breakdown': 'Detailed breakdown of workforce costs by category'
+  }
+  return descriptions[view] || 'Advanced organizational analytics'
 }
 </script>
 
@@ -886,10 +1270,13 @@ const toggleSection = (section) => {
 }
 
 .toolbar-panel {
-  position: absolute;
-  left: 72px;
-  top: 0;
-  width: 320px;
+  position: fixed;
+  left: 100px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
   background-color: white;
   border-radius: 12px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
@@ -1245,6 +1632,14 @@ const toggleSection = (section) => {
   transition: transform 0.2s ease-out;
 }
 
+.chart-content-horizontal.analytics-mode {
+  width: 100%;
+  min-width: 100%;
+  height: auto;
+  min-height: 100vh;
+  padding: 0;
+}
+
 /* Employee Card Styles (preserved from original) */
 .employee-card {
   position: absolute;
@@ -1352,5 +1747,534 @@ const toggleSection = (section) => {
   font-weight: bold;
   margin-top: 8px;
   display: inline-block;
+}
+
+/* Chart Views Styles */
+.chart-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-category {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.chart-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.chart-btn:hover {
+  background-color: #f8fafc;
+}
+
+.chart-btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.chart-btn-primary:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.chart-btn.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Analytics Container Styles */
+.analytics-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  background: #f8fafc;
+}
+
+.chart-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.chart-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.chart-description {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+/* Org Map Styles */
+.orgmap-container {
+  display: flex;
+  height: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.orgmap-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 2px solid;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.orgmap-section:hover {
+  transform: scale(1.02);
+  z-index: 10;
+}
+
+.orgmap-section:last-child {
+  border-right: none;
+}
+
+.orgmap-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 8px;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.orgmap-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Proportion Chart Styles */
+.proportion-chart {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  justify-content: center;
+}
+
+.pie-chart {
+  width: 300px;
+  height: 300px;
+}
+
+.pie-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Span Chart Styles */
+.span-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.span-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.span-label {
+  width: 80px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.span-bar-container {
+  flex: 1;
+  height: 40px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.span-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+.span-count {
+  position: absolute;
+  right: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+/* Pyramid Chart Styles */
+.pyramid-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2rem 0;
+}
+
+.pyramid-level {
+  height: 50px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  gap: 12px;
+}
+
+.pyramid-level:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pyramid-label {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.pyramid-count {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+/* Cost Chart Styles */
+.cost-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cost-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cost-label {
+  width: 200px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.cost-bar-container {
+  flex: 1;
+  height: 40px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease;
+}
+
+.cost-amount {
+  position: absolute;
+  right: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+/* Heatmap Styles */
+.heatmap-container {
+  overflow-x: auto;
+}
+
+.heatmap-grid {
+  display: table;
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.heatmap-header,
+.heatmap-row {
+  display: table-row;
+}
+
+.heatmap-cell {
+  display: table-cell;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.header-cell {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.level-cell {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #1e293b;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+.data-cell {
+  /* No transitions or hover effects - pure data display */
+}
+
+/* Coming Soon Styles */
+.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .proportion-chart {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .pie-chart {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .span-label,
+  .cost-label {
+    width: 120px;
+    font-size: 12px;
+  }
+  
+  .chart-view {
+    padding: 1rem;
+  }
+  
+  .analytics-container {
+    padding: 1rem;
+  }
+}
+
+/* Insights Section Styles */
+.insights-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.insights-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.insight-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.insight-header {
+  padding: 1rem;
+  color: white;
+}
+
+.insight-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.insight-content {
+  padding: 1rem;
+}
+
+.insight-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.insight-stat:last-child {
+  border-bottom: none;
+}
+
+.insight-label {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.insight-value {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Summary Statistics Styles */
+.summary-stats {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.summary-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Panel Backdrop */
+.panel-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Panel Content */
+.panel-content {
+  /* No additional styling needed - content flows naturally */
 }
 </style> 
