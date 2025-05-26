@@ -6,6 +6,55 @@
         <p class="text-gray-600">Traditional hierarchy view with all employee metrics</p>
       </div>
       
+      <!-- Search Bar -->
+      <div class="flex justify-center mb-4">
+        <div class="relative w-full max-w-md">
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            @keyup.enter="searchAndHighlight"
+            type="text"
+            placeholder="Search employee by name..."
+            class="w-full px-4 py-2 pl-10 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search Results -->
+      <div v-if="searchResults.length > 0 && searchQuery" class="flex justify-center mb-4">
+        <div class="bg-white rounded-lg border shadow-sm p-3 max-w-md w-full">
+          <div class="text-sm text-gray-600 mb-2">Found {{ searchResults.length }} result(s):</div>
+          <div class="space-y-1">
+            <button
+              v-for="result in searchResults.slice(0, 5)"
+              :key="result.id"
+              @click="selectEmployee(result)"
+              class="w-full text-left px-3 py-2 rounded hover:bg-gray-50 transition-colors"
+            >
+              <div class="font-medium text-gray-900">{{ result.name }}</div>
+              <div class="text-xs text-gray-500">{{ result.jobTitle }} • {{ result.department }}</div>
+            </button>
+          </div>
+          <div v-if="searchResults.length > 5" class="text-xs text-gray-500 mt-2">
+            And {{ searchResults.length - 5 }} more...
+          </div>
+        </div>
+      </div>
+      
       <!-- Layer Controls -->
       <div class="flex justify-center mb-4">
         <div class="bg-white rounded-lg p-4 shadow border">
@@ -52,6 +101,33 @@
         >
           Reset View
         </button>
+        
+        <!-- Zoom Controls -->
+        <div class="flex items-center space-x-2 bg-white rounded-lg border px-3 py-2">
+          <button 
+            @click="zoomOut"
+            class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition-colors"
+            :disabled="zoomLevel <= 0.25"
+          >
+            −
+          </button>
+          <span class="text-sm font-medium text-gray-700 min-w-[60px] text-center">
+            {{ Math.round(zoomLevel * 100) }}%
+          </span>
+          <button 
+            @click="zoomIn"
+            class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition-colors"
+            :disabled="zoomLevel >= 2"
+          >
+            +
+          </button>
+          <button 
+            @click="resetZoom"
+            class="px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-700 transition-colors text-xs"
+          >
+            Reset
+          </button>
+        </div>
       </div>
     </div>
 
@@ -60,22 +136,58 @@
       ref="scrollContainer"
       class="chart-scroll-container-fullscreen bg-gray-50 border border-gray-200 shadow-lg"
       @scroll="handleScroll"
+      @wheel="handleWheel"
     >
-      <div class="chart-content-horizontal">
+      <div 
+        class="chart-content-horizontal"
+        :style="{ 
+          transform: `scale(${zoomLevel})`,
+          transformOrigin: 'top left'
+        }"
+      >
         <!-- Render the tree recursively starting from root -->
         <EmployeeNode 
           v-if="hierarchyTree && !loading"
           :employee="hierarchyTree"
           :level-colors="levelColors"
           :visible-layers="visibleLayers"
+          :highlighted-employee-id="highlightedEmployeeId"
           @toggle-hierarchy="handleHierarchyToggle"
+          @employee-highlighted="handleEmployeeHighlighted"
         />
+      </div>
+
+      <!-- Floating Zoom Controls -->
+      <div class="floating-zoom-controls">
+        <button 
+          @click="zoomIn"
+          class="zoom-btn zoom-in-btn"
+          :disabled="zoomLevel >= 2"
+          title="Zoom In"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+          </svg>
+        </button>
+        <button 
+          @click="zoomOut"
+          class="zoom-btn zoom-out-btn"
+          :disabled="zoomLevel <= 0.25"
+          title="Zoom Out"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM7 10h6"/>
+          </svg>
+        </button>
+        <div class="zoom-level-display">
+          {{ Math.round(zoomLevel * 100) }}%
+        </div>
       </div>
     </div>
 
     <!-- Performance Info -->
     <div class="mt-4 text-center text-xs text-gray-500">
-      Total employees: {{ allEmployees.length }}
+      Total employees: {{ allEmployees.length }} | Zoom: {{ Math.round(zoomLevel * 100) }}%
     </div>
   </div>
 </template>
@@ -98,7 +210,7 @@ const allEmployees = ref([])
 const employeeMap = ref(new Map())
 const hierarchyTree = ref(null)
 const loading = ref(true)
-const visibleLayers = ref(new Set([1, 2, 3, 4, 5]))
+const visibleLayers = ref(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
 const availableLevels = ref([])
 const expandedNodes = ref(new Set())
 const metricsCache = ref(new Map())
@@ -106,6 +218,10 @@ const scrollTop = ref(0)
 const scrollLeft = ref(0)
 const containerHeight = ref(window.innerHeight - 200)
 const containerWidth = ref(0)
+const zoomLevel = ref(1)
+const searchQuery = ref('')
+const searchResults = ref([])
+const highlightedEmployeeId = ref(null)
 
 // Level colors
 const levelColors = {
@@ -242,6 +358,22 @@ const buildHierarchy = () => {
 
   // Calculate available levels
   availableLevels.value = [...new Set(allEmployees.value.map(emp => emp.level))].sort((a, b) => a - b)
+  
+  // Debug: Log level distribution
+  console.log('Available levels:', availableLevels.value)
+  const levelCounts = {}
+  allEmployees.value.forEach(emp => {
+    levelCounts[emp.level] = (levelCounts[emp.level] || 0) + 1
+  })
+  console.log('Level distribution:', levelCounts)
+  
+  // Debug: Check for level 9 employees with children
+  const level9WithChildren = allEmployees.value.filter(emp => emp.level === 9 && emp.children.length > 0)
+  console.log('Level 9 employees with children:', level9WithChildren.length)
+  if (level9WithChildren.length > 0) {
+    console.log('Sample level 9 manager:', level9WithChildren[0])
+    console.log('Their children levels:', level9WithChildren[0].children.map(child => child.level))
+  }
 }
 
 const calculateAllMetrics = () => {
@@ -361,6 +493,7 @@ const resetView = () => {
     scrollContainer.value.scrollTop = 0
     scrollContainer.value.scrollLeft = 0
   }
+  zoomLevel.value = 1
 }
 
 const handleScroll = (event) => {
@@ -392,6 +525,118 @@ const formatCurrency = (amount) => {
   }
   return amount.toLocaleString()
 }
+
+const zoomOut = () => {
+  zoomLevel.value -= 0.25
+}
+
+const zoomIn = () => {
+  zoomLevel.value += 0.25
+}
+
+const resetZoom = () => {
+  zoomLevel.value = 1
+}
+
+const handleWheel = (event) => {
+  // Check if Ctrl key is pressed for zoom
+  if (event.ctrlKey || event.metaKey) {
+    event.preventDefault()
+    
+    const delta = event.deltaY > 0 ? -0.1 : 0.1
+    const newZoom = Math.max(0.25, Math.min(2, zoomLevel.value + delta))
+    zoomLevel.value = newZoom
+  }
+}
+
+const handleSearch = () => {
+  if (!searchQuery.value.trim()) {
+    searchResults.value = []
+    return
+  }
+  
+  const query = searchQuery.value.toLowerCase().trim()
+  searchResults.value = allEmployees.value.filter(emp => 
+    emp.name && emp.name.toLowerCase().includes(query)
+  ).slice(0, 10) // Limit to 10 results for performance
+}
+
+const searchAndHighlight = () => {
+  if (searchResults.value.length > 0) {
+    selectEmployee(searchResults.value[0])
+  }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchResults.value = []
+  highlightedEmployeeId.value = null
+}
+
+const selectEmployee = (employee) => {
+  // Clear previous highlight
+  highlightedEmployeeId.value = null
+  
+  // Expand path to the selected employee
+  expandPathToEmployee(employee)
+  
+  // Clear search
+  searchQuery.value = ''
+  searchResults.value = []
+  
+  // Highlight the employee after a short delay to allow for DOM updates
+  setTimeout(() => {
+    highlightedEmployeeId.value = employee.id
+  }, 100)
+}
+
+const expandPathToEmployee = (employee) => {
+  // Get the path from root to this employee
+  const path = []
+  let current = employee
+  
+  while (current && current.parent) {
+    path.unshift(current.parent)
+    current = current.parent
+  }
+  
+  // Expand all nodes in the path
+  path.forEach(node => {
+    if (node.hasChildren) {
+      node.isExpanded = true
+      expandedNodes.value.add(node.id)
+    }
+  })
+}
+
+const handleEmployeeHighlighted = (eventData) => {
+  if (!scrollContainer.value || !eventData.position) return
+  
+  const container = scrollContainer.value
+  const containerRect = container.getBoundingClientRect()
+  
+  // Calculate the center position of the container
+  const containerCenterX = containerRect.width / 2
+  const containerCenterY = containerRect.height / 2
+  
+  // Calculate where we want to scroll to center the employee
+  const targetScrollX = eventData.position.x - containerCenterX + (eventData.position.width / 2)
+  const targetScrollY = eventData.position.y - containerCenterY + (eventData.position.height / 2)
+  
+  // Ensure we don't scroll beyond the boundaries
+  const maxScrollX = container.scrollWidth - container.clientWidth
+  const maxScrollY = container.scrollHeight - container.clientHeight
+  
+  const finalScrollX = Math.max(0, Math.min(targetScrollX, maxScrollX))
+  const finalScrollY = Math.max(0, Math.min(targetScrollY, maxScrollY))
+  
+  // Smooth scroll to the position
+  container.scrollTo({
+    left: finalScrollX,
+    top: finalScrollY,
+    behavior: 'smooth'
+  })
+}
 </script>
 
 <style scoped>
@@ -422,6 +667,7 @@ const formatCurrency = (amount) => {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
+  transition: transform 0.2s ease-out;
 }
 
 .connections-svg {
@@ -534,5 +780,59 @@ const formatCurrency = (amount) => {
   font-weight: bold;
   margin-top: 8px;
   display: inline-block;
+}
+
+.floating-zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.zoom-btn {
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  color: #374151;
+}
+
+.zoom-btn:hover:not(:disabled) {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.zoom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  color: #9ca3af;
+}
+
+.zoom-level-display {
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-width: 50px;
+  text-align: center;
 }
 </style> 

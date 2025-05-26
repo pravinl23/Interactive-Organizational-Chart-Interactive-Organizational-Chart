@@ -2,8 +2,12 @@
   <div v-if="isVisible" class="employee-node">
     <!-- Employee Card -->
     <div 
+      ref="employeeCardRef"
       class="employee-card transition-all duration-300 ease-in-out cursor-pointer"
-      :class="{ 'expanded': expanded }"
+      :class="{ 
+        'expanded': expanded,
+        'highlighted': props.highlightedEmployeeId === props.employee.id
+      }"
       :style="{ backgroundColor: levelColors[employee.level] + '10' }"
       @click="toggleExpanded"
     >
@@ -102,6 +106,11 @@
             {{ employee.isExpanded ? 'Collapse Team' : 'Expand Team' }}
             ({{ employee.directReports }} direct reports)
           </button>
+          <!-- Debug info -->
+          <div v-if="employee.level >= 8" class="text-xs text-gray-500 mt-1">
+            Level {{ employee.level }} | Children: {{ employee.children.length }} | 
+            Child levels: {{ employee.children.map(c => c.level).join(', ') }}
+          </div>
         </div>
       </div>
     </div>
@@ -118,7 +127,9 @@
           :employee="child"
           :level-colors="levelColors"
           :visible-layers="visibleLayers"
+          :highlighted-employee-id="highlightedEmployeeId"
           @toggle-hierarchy="$emit('toggle-hierarchy', $event)"
+          @employee-highlighted="$emit('employee-highlighted', $event)"
         />
       </div>
     </div>
@@ -126,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 // Define props
 const props = defineProps({
@@ -141,14 +152,42 @@ const props = defineProps({
   visibleLayers: {
     type: Set,
     required: true
+  },
+  highlightedEmployeeId: {
+    type: String,
+    default: null
   }
 })
 
 // Define emits
-const emit = defineEmits(['toggle-hierarchy'])
+const emit = defineEmits(['toggle-hierarchy', 'employee-highlighted'])
 
 // Local state for card expansion
 const expanded = ref(false)
+const employeeCardRef = ref(null)
+
+// Watch for when this employee becomes highlighted
+watch(() => props.highlightedEmployeeId, (newId) => {
+  if (newId === props.employee.id && employeeCardRef.value) {
+    nextTick(() => {
+      const rect = employeeCardRef.value.getBoundingClientRect()
+      const scrollContainer = document.querySelector('.chart-scroll-container-fullscreen')
+      if (scrollContainer) {
+        const containerRect = scrollContainer.getBoundingClientRect()
+        emit('employee-highlighted', {
+          employeeId: props.employee.id,
+          element: employeeCardRef.value,
+          position: {
+            x: rect.left - containerRect.left + scrollContainer.scrollLeft,
+            y: rect.top - containerRect.top + scrollContainer.scrollTop,
+            width: rect.width,
+            height: rect.height
+          }
+        })
+      }
+    })
+  }
+})
 
 // Computed properties
 const isVisible = computed(() => {
@@ -210,6 +249,21 @@ const formatCurrency = (amount) => {
 
 .employee-card.expanded {
   min-height: 400px;
+}
+
+.employee-card.highlighted {
+  border: 3px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.4), 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .avatar {
