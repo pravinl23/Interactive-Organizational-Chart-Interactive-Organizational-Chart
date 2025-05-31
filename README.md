@@ -1,4 +1,4 @@
-# Agentnoon TakeHome - Interactive Organizational Chart
+#  Interactive Organizational Chart
 
 A modern, interactive organizational chart visualization built with Vue.js, D3.js, and Tailwind CSS. This application provides comprehensive organizational insights with advanced analytics, search capabilities, and intuitive navigation.
 
